@@ -1,4 +1,4 @@
-"Id","Designator","Package","Quantity"
+"Id","Designator","Package","Quantity","Designation"
 1,"A1","Arduino_MKRZero",1,"ARDUINO_MKRZERO"
 2,"M1B1","GrooveStepdown",1,"Groove-StepDown"
 3,"M1","AE-TPS7A4700",1,"AE-TPS7A4700"
