@@ -15,7 +15,7 @@ tracker. I want to control PV panel orientation for both Elevation and
 Azimuth angles (dual-axis), based on the calculated solar position of a PV
 systems specific geographic location and time (scheduled).
 
-<img src="img/SunTracker5.png width="320px"><img src="img/DSC_0226s.jpg width="320px">
+<img src="img/SunTracker5.png" width="400px"><img src="img/DSC_0226s.jpg" width="400px">
 
 
 Working under space, cost and time constraints, the prototype development is
@@ -24,7 +24,7 @@ orientation of Mini-PV systems such as below.
 
 ## Functional Design
 
-<img src="img/sun-position-schema.png">
+<img src="img/sun-position-schema.png" width="400px">
 
 In order to clearly understand and validate the sun tracking function, a 32
 dual-color LED ring will display the horizon and move the sun position over
@@ -32,7 +32,7 @@ time.
 
 ### Board Components
 
-<img src="img/suntracker2r3 block diagram.png">
+<img src="img/suntracker2r3 block diagram.png" width="400px">
 
 ### Board Layout
 
