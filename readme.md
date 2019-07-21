@@ -24,7 +24,7 @@ orientation of Mini-PV systems such as below.
 
 ## Functional Design
 
-<img src="img/sun-position-schema.png" width="400px">
+<img src="img/sun-position-schema.png" width="600px">
 
 In order to clearly understand and validate the sun tracking function, a 32
 dual-color LED ring will display the horizon and move the sun position over
@@ -32,7 +32,7 @@ time.
 
 ### Board Components
 
-<img src="img/suntracker2r3 block diagram.png" width="400px">
+<img src="img/suntracker2r3 block diagram.png" width="600px">
 
 ### Board Layout
 
