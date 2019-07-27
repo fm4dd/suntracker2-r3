@@ -20,15 +20,17 @@ systems specific geographic location and time (scheduled).
 
 Working under space, cost and time constraints, the prototype development is
 done on a small scale model. Eventually, I want to control and optimize the
-orientation of Mini-PV systems such as below.
+orientation of Mini-PV systems.
 
 ## Functional Design
 
 <img src="img/sun-position-schema.png" width="600px">
 
 In order to clearly understand and validate the sun tracking function, a 32
-dual-color LED ring will display the horizon and move the sun position over
-time.
+dual-color LED ring represents the horizon with north, sunrise and sunset
+indicators. A green indicator displays the suns daily movement over time.
+The optional NEMA stepper motor is used to develop the motor control code
+for the solar panel horizontal alignment.
 
 ### Board Components
 
