@@ -57,4 +57,4 @@ location, on a Linux PC.
 
 ### Demo
 
-<iframe width="560" height="315" src="https://www.youtube.com/embed/e8dpviy-tlI" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+[![Watch the video](img/suntracker2r3-yt-demo.png)](https://youtu.be/e8dpviy-tlI)
