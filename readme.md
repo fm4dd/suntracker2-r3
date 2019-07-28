@@ -54,3 +54,7 @@ location, on a Linux PC.
 ### PCB
 
 <img src="img/DSC_3001.png">
+
+### Demo
+
+<iframe width="560" height="315" src="https://www.youtube.com/embed/e8dpviy-tlI" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
