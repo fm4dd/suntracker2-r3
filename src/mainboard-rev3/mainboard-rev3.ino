@@ -80,6 +80,7 @@ uint8_t transitmin = 0;      // peak altitude minute
 uint8_t sethour = 0;         // sunset hour
 uint8_t setmin = 0;          // sunset minute
 float heading;               // North heading
+int16_t hdg;                 // North heading, rounded to 0..360
 double azimuth;              // sun azimuth angle, north->eastward
 double zenith;               // zenith angle, substract from 90 to get altitude
 uint16_t riseaz;             // sunrise azimuth, rounded to full degrees
@@ -140,7 +141,6 @@ void setup() {
   /* Pushbutton 1 (-) at startup triggers demo LOW=ON  */
   /* demo mode switches main loop from min to sec exec */
   /* ------------------------------------------------- */
-  if(digitalRead(push1) == LOW)
   if(digitalRead(push1) == LOW) opmode = 1; // demo mode
   /* ------------------------------------------------- */
   /* Set motor-1 control pins as output                */
@@ -543,7 +543,7 @@ void setup() {
       /* Set the loop speed. 60000 = 60s = normal time     */
       /* 100 = 1/10s intervals, 1440*0.1sec/60 = 2:24mins  */
       /* ------------------------------------------------- */
-      delay(50);
+      delay(20);
       i++;
     }
     /* ------------------------------------------------- */
@@ -640,7 +640,9 @@ void loop() {
   /* ------------------------------------------------- */
   /* print North heading to OLED2                      */
   /* ------------------------------------------------- */
-  snprintf(dirStr, sizeof(dirStr), "H%03d", (int)round((heading) * 10 / 10.0));
+  hdg = (int16_t)round((heading) * 10 / 10.0);
+  if(hdg < 0) hdg = 360 + hdg;
+  snprintf(dirStr, sizeof(dirStr), "H%03d", hdg);
   oled2.setFont(u8g2_font_inr19_mr);
   oled2.drawStr(0,26, dirStr);
 
