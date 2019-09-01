@@ -65,7 +65,7 @@ void ledRing::lightcheck() {
   mcp4.writeGPIOAB(0x00);   /* expander4 all red LED off   */
 }
 
-// Below two functions ae commented out because I have
+// Below two functions are commented out because I have
 // the same functions in the main file with additional
 // code for OLED status display.
 /* ----------------------------------------------------- */
