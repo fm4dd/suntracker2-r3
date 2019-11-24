@@ -11,7 +11,13 @@
 #include <SPI.h>               // Arduino default SPI library
 #include <SD.h>                // Arduino default SD library
 #include "LSM303.h"            // https://github.com/pololu/lsm303-arduino
-#include "U8g2lib.h"           // https://github.com/olikraus/u8g2
+/* ------------------------------------------------- *
+ * The U8g2 lib has been modified for dual-1306 Oled *
+ * and was placed into the sketch folder under src.  *
+ * Its stripped down to a single SSD1306 device type *
+ * The lib is 28MB, due to a 25MB u8g2_fonts.c file. *
+ * ------------------------------------------------- */
+#include "src/U8g2lib.h"       // https://github.com/olikraus/u8g2
 #include "uRTCLib.h"           // https://github.com/Naguissa/uRTCLib
 #include "ledring.h"           // local code module for the 32 LED ring
 #include "oledimg.h"           // bitmap files for the two OLED displays
@@ -87,7 +93,6 @@ uint16_t riseaz;             // sunrise azimuth, rounded to full degrees
 int16_t transalt;            // transit altitude - solar noon peak altitude
 uint16_t setaz;              // sunset azimuth, rounded to full degrees
 boolean daylight;            // daylight flag, false = night
-boolean olddaylight;         // flag to detect moment of sunrise/set change
 char lineStr[15];            // display output buffer, 14-chars + \0
 char hledStr[5];             // display LED control "-B01"
 char dirStr[6];              // display north angle "H263"
@@ -114,7 +119,6 @@ uint16_t m1cpos = 0;         // stepper motor-1 current step position (0..1599)
 uint16_t m1tpos = 0;         // stepper motor-1 target step position (0..1599)
 boolean m1move = false;      // stepper motor-1 "move in progress" flag
 uint8_t opmode = 0;          // operations mode: 0 = normal, 1 = demo
-uint8_t testmode = 0;        // selftest mode: 0 = normal, 2 = extended
 uint16_t day_azi[1440];      // daily azimuth angle 0..360, 1min interval, 2.88KB
 int16_t day_ele[1440];       // daily elevation angle -90 ..90, 1min interval 2.88KB
 
@@ -144,11 +148,6 @@ void setup() {
   /* demo mode switches main loop from min to sec exec */
   /* ------------------------------------------------- */
   if(digitalRead(push1) == LOW) opmode = 1; // demo mode
-  /* ------------------------------------------------- */
-  /* Pushbutton 2 (-) at startup for extended selftest */
-  /* LOW=ON. Ext. Selftest runs extra checks at bootup */
-  /* ------------------------------------------------- */
-  if(digitalRead(push2) == LOW) testmode = 1; // extended
   /* ------------------------------------------------- */
   /* Set motor-1 control pins as output                */
   /* ------------------------------------------------- */
@@ -189,9 +188,9 @@ void setup() {
   oled2.sendBuffer();
   delay(2000);
   /* ------------------------------------------------- */
-  /* Pushbutton 2 at boot sets testmode. 1 = extended  */
+  /* 1st dip switch enables extended selftests, LOW=ON */
   /* ------------------------------------------------- */
-  if(testmode == 1) {
+  if(dippos1 == LOW) {
     oled1.drawStr(67, 14, "Modules");
     oled1.drawStr(67, 29, "Testrun");
     /* ------------------------------------------------- */
@@ -234,7 +233,7 @@ void setup() {
       delay(1000);
     }
     delay(2000);
-  } // end testmode = 1, skip extended selftest
+  } // end dippos != 1, skip extended selftest
   /* ------------------------------------------------- */
   /* Enable the SD card module                         */
   /* ------------------------------------------------- */
@@ -264,7 +263,7 @@ void setup() {
   delay(1500);
   oled1.clearBuffer();
   
-  if(testmode == 1) {
+  if(dippos1 == LOW) {
     /* ------------------------------------------------- */
     /* Check File read from SD: "dset.txt"               */
     /* ------------------------------------------------- */
@@ -294,7 +293,7 @@ void setup() {
     }
     dset.close();
     delay(2000);
-  } // end testmode = 1, skip extended selftest
+  } // end dippos != 1, skip extended selftest
   oled1.clearBuffer();
   /* ------------------------------------------------- */
   /* Enable the DS3231 RTC clock module                */
@@ -352,7 +351,7 @@ void setup() {
   /* ------------------------------------------------- */
   oled1.drawStr(0, 47, "Test 32x LED");
   oled1.sendBuffer();
-  if(testmode == 1) {
+  if(dippos1 == LOW) {
     ring.lightcheck();
     /* ----------------------------------------------- */
     /* Single LED walkthrough                          */
@@ -523,13 +522,6 @@ void setup() {
         if(sled > 15) mcp2.digitalWrite((sled-16), HIGH);
         oldsled = sled;
       }
-      /* ------------------------------------------------- */
-      /* 2nd display mode: light up all green LED starting */
-      /* from sunriseLED+1 to current azimuth LED, until   */
-      /* sunset. At sunset, delete all daytime green LED   */
-      /* and show the sun azimuth angle in standard mode.  */
-      /* ------------------------------------------------- */
-      if(dippos1 == LOW) display_mode2();
       /* ------------------------------------------------- */
       /* motor1 target position follows azimuth LED value  */
       /* if 2nd dip switch enabled the motor. DIP2: LOW=ON */
@@ -770,14 +762,6 @@ void loop() {
     if(sled > 15) mcp2.digitalWrite((sled-16), HIGH);
     oldsled = sled;
   }
-
-  /* ------------------------------------------------- */
-  /* 2nd display mode: light up all green LED starting */
-  /* from sunriseLED+1 to current azimuth LED, until   */
-  /* sunset. At sunset, delete all daytime green LED   */
-  /* and show the sun azimuth angle in standard mode.  */
-  /* ------------------------------------------------- */
-  if(dippos1 == LOW) display_mode2();
 
   oled1.updateDisplay();
   oled2.updateDisplay();
@@ -1174,63 +1158,4 @@ void fill_dayarray(char *file) {
     i++;
   }
   bin.close();
-}
-
-/* ------------------------------------------------- */
-/* 2nd display mode: light up all green LED starting */
-/* from sunriseLED+1 to current azimuth LED, until   */
-/* sunset. At sunset, delete all daytime green LED   */
-/* and show the sun azimuth angle in standard mode.  */
-/* ------------------------------------------------- */
-void display_mode2() {
-  
- // delete all daytime LED when sunset occurs,
- // continue with single azimuth  LED at night
-  if(daylight == false && olddaylight == true) {
- #ifdef DEBUG
-    Serial.println("==========================");
-    Serial.println("NIGHTTIME SWITCH DETECTED!");
-    Serial.println("==========================");
-#endif
-    mcp3.writeGPIOAB(0x00);
-    mcp4.writeGPIOAB(0x00);
-    if(aled < 16) mcp3.digitalWrite(aled, HIGH);
-    if(aled > 15) mcp4.digitalWrite((aled-16), HIGH);
-  }
-  olddaylight = daylight;
-    
-#ifdef DEBUG
-    Serial.print("rled: ");
-    Serial.print(rled);
-    Serial.print(" aled: ");
-    Serial.println(aled);
-#endif
-  // example: rled = 23, aled = 8
-  if(daylight) {
-    uint8_t i = 0;
-    if(rled == 31) i = 0;
-    else i = rled + 1;
-    if(rled < aled) {
-      while(i<=aled) {
-        if(i < 16) mcp3.digitalWrite(i, HIGH);
-        if(i > 15) mcp4.digitalWrite((i-16), HIGH);
-        i++;
-      }
-    }
-    if(rled > aled) {
-      if(rled == 31) i = 0;
-      else i = rled + 1;
-      while(i<32) {
-        if(i < 16) mcp3.digitalWrite(i, HIGH);
-        if(i > 15) mcp4.digitalWrite((i-16), HIGH);
-        i++;
-      }
-      i = 0;
-      while(i<aled) {
-        if(i < 16) mcp3.digitalWrite(i, HIGH);
-        if(i > 15) mcp4.digitalWrite((i-16), HIGH);
-        i++;
-      }
-    }
-  }
 }
