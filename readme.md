@@ -1,5 +1,7 @@
 # SunTracker2 Revision 3
 
+![test](https://github.com/fm4dd/suntracker2-r3/workflows/test/badge.svg)
+
 <img src="img/DSC_3030.png">
 
 This project develops a photovoltaic (PV) solar tracking controller.
